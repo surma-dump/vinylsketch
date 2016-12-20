@@ -3,9 +3,10 @@
     backgroundColor: 'white',
     lineColor: 'black',
     turns: 64,
-    gapFactor: 0.5,
+    gapFactor: 0.4,
     segmentsPerTurn: 3600,
-    blackFrequency: 5000,
+    blackFactor: 1,
+    startAngle: 360,
     gamma: 1.4
   };
 
@@ -31,7 +32,7 @@
     }
     
     toFrequency(b, p) {
-      return this.blackFrequency * (p.radius / this.blackFrequency);
+      return this.blackFactor * p.radius;
     }
     toAmplitude(b, p) {
       return Math.pow(1-b, this.gamma) * this.gap * this.gapFactor;
@@ -64,7 +65,7 @@
       ctx.beginPath();
       ctx.moveTo(this.length/2, this.length/2);
       
-      for(let angle = 0; angle < (this.turns * 360); angle += this.anglePerSegment) {
+      for(let angle = this.startAngle; angle < (this.turns * 360); angle += this.anglePerSegment) {
         let polar = this.angleToPolar(angle);
         let cartesian = this.polarToCartesian(polar);
 
@@ -77,20 +78,6 @@
       ctx.stroke();
     }
   }
-
-  const vs = new VinylSketch(document.querySelector('.vinylsketch'));
-  window.vs = vs;
-  document.querySelector('input[type=file]').addEventListener('change', evt => {
-    const file = evt.target.files[0];
-    readFile(file)
-      .then(toCanvas)
-      .then(canvas => {
-        vs.image = canvas;
-        console.timeline('draw');
-        vs.draw();
-        console.timelineEnd('draw');
-     });
-  });
 
   function readFile(file) {
     return new Promise(resolve => {
@@ -114,4 +101,61 @@
       resolve(c);
     });
   }
+
+  function init() {
+    const vs = new VinylSketch(document.querySelector('.vinylsketch'));
+    window.vs = vs;
+    document.querySelector('input[type=file]').addEventListener('change', evt => {
+      const file = evt.target.files[0];
+      readFile(file)
+        .then(dataurl => {
+          vs.dataurl = dataurl;
+          return toCanvas(dataurl);
+        })
+        .then(canvas => {
+          vs.image = canvas;
+          console.timeline('draw');
+          vs.draw();
+          console.timelineEnd('draw');
+      });
+    });
+
+    function genericChangeHandler(event) {
+      console.log(`Setting ${event.target.dataset.bind} to ${event.target.value}`);
+      vs[event.target.dataset.bind] = parseFloat(event.target.value);
+      vs.draw();
+    }
+
+    Array.from(document.querySelectorAll('.controls input:not(.noauto)'))
+      .forEach(control => {
+        control.value = vs[control.dataset.bind];
+        control.addEventListener('change', genericChangeHandler);
+      });
+
+    [
+      function length(event) {
+        vs.image.width = vs.image.height = vs.canvas.width = vs.canvas.height = event.target.value;
+        toCanvas(vs.dataurl)
+          .then(canvas => {
+            vs.image = canvas;
+            vs.draw();
+          });
+      }
+    ].forEach(f => {
+      document.querySelector(`.controls input[data-bind=${f.name}]`)
+        .addEventListener('change', f);
+    });
+
+    document.querySelector('button.download').addEventListener('click', _ => {
+      vs.canvas.toBlob(blob => {
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = 'vinylsketch.png';
+        link.click();
+        window.URL.revokeObjectURL(link.href);
+      }, 'image/png');
+    });
+  }
+
+  init();
 })();
