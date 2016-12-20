@@ -3,7 +3,10 @@
     backgroundColor: 'white',
     lineColor: 'black',
     turns: 64,
-    segmentsPerTurn: 3600
+    gapFactor: 0.5,
+    segmentsPerTurn: 3600,
+    blackFrequency: 5000,
+    gamma: 1.4
   };
 
   class VinylSketch {
@@ -28,14 +31,14 @@
     }
     
     toFrequency(b, p) {
-      return 500 * (p.radius / 500);
+      return this.blackFrequency * (p.radius / this.blackFrequency);
     }
     toAmplitude(b, p) {
-      return (1-b) * this.gap / 3;
+      return Math.pow(1-b, this.gamma) * this.gap * this.gapFactor;
     }
-    
     brightnessInImage(ctx, p) {
-      return ctx.getImageData(p.x, p.y, 1, 1).data[0]/255;
+      const pixel = ctx.getImageData(p.x, p.y, 1, 1).data;
+      return (pixel[0]+pixel[1]+pixel[2])/3/255;
     }
 
     angleToPolar(alpha) {
@@ -58,12 +61,13 @@
       ctx.fillStyle = this.backgroundColor;
       ctx.strokeStyle = this.lineColor;
       ctx.fillRect(0, 0, this.length, this.length);
+      ctx.beginPath();
       ctx.moveTo(this.length/2, this.length/2);
-
+      
       for(let angle = 0; angle < (this.turns * 360); angle += this.anglePerSegment) {
         let polar = this.angleToPolar(angle);
         let cartesian = this.polarToCartesian(polar);
-      
+
         const brightness = this.brightnessInImage(srcCtx, cartesian);
         polar.radius += Math.sin(polar.angle * this.toFrequency(brightness, polar)) * this.toAmplitude(brightness, polar);
         cartesian = this.polarToCartesian(polar);
@@ -75,13 +79,16 @@
   }
 
   const vs = new VinylSketch(document.querySelector('.vinylsketch'));
+  window.vs = vs;
   document.querySelector('input[type=file]').addEventListener('change', evt => {
     const file = evt.target.files[0];
     readFile(file)
       .then(toCanvas)
       .then(canvas => {
         vs.image = canvas;
+        console.timeline('draw');
         vs.draw();
+        console.timelineEnd('draw');
      });
   });
 
