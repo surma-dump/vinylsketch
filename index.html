@@ -24,18 +24,31 @@
 <aside class="controls">
   <label>
     Size: <input type="range" data-bind="length" min="128" max="5192" value="1024" class="noauto">
+    <span class="value">1024</span>
   </label>
   <label>
     Turns: <input type="range" data-bind="turns" min="1" max="128">
+    <span class="value"></span>
   </label>
   <label>
     Start Angle: <input type="range" data-bind="startAngle" min="0" max="720">
+    <span class="value"></span>
   </label>
   <label>
     Gap factor: <input type="range" data-bind="gapFactor" min="0" max="1" step="0.01">
+    <span class="value"></span>
   </label>
   <label>
     Black factor: <input type="range" data-bind="blackFactor" min="0" max="5" step="0.1">
+    <span class="value"></span>
+  </label>
+  <label>
+    Gamma: <input type="range" data-bind="gamma" min="0" max="4" step="0.01">
+    <span class="value"></span>
+  </label>
+  <label>
+    Segments per turn: <input type="range" data-bind="segmentsPerTurn" min="60" max="18000" step="60">
+    <span class="value"></span>
   </label>
 </aside>
 <button class="download">Download</button>

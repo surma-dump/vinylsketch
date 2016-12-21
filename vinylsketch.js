@@ -121,14 +121,16 @@
     });
 
     function genericChangeHandler(event) {
-      console.log(`Setting ${event.target.dataset.bind} to ${event.target.value}`);
-      vs[event.target.dataset.bind] = parseFloat(event.target.value);
+      const value = event.target.value;
+      event.target.parentNode.querySelector('.value').textContent = value;
+      vs[event.target.dataset.bind] = parseFloat(value);
       vs.draw();
     }
 
     Array.from(document.querySelectorAll('.controls input:not(.noauto)'))
       .forEach(control => {
         control.value = vs[control.dataset.bind];
+        control.parentNode.querySelector('.value').textContent = control.value;
         control.addEventListener('change', genericChangeHandler);
       });
 
@@ -143,7 +145,10 @@
       }
     ].forEach(f => {
       document.querySelector(`.controls input[data-bind=${f.name}]`)
-        .addEventListener('change', f);
+        .addEventListener('change', event => {
+          event.target.parentNode.querySelector('.value').textContent = event.target.value;
+          f(event);
+        });
     });
 
     document.querySelector('button.download').addEventListener('click', _ => {
