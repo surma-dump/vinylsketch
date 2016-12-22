@@ -4,10 +4,10 @@
     lineColor: 'black',
     turns: 64,
     gapFactor: 0.4,
-    segmentsPerTurn: 3600,
-    blackFactor: 1,
+    segmentsPerTurn: 7200,
+    blackFactor: 2,
     startAngle: 360,
-    gamma: 1.4
+    gamma: 1
   };
 
   class VinylSketch {
