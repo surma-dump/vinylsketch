@@ -114,9 +114,9 @@
         })
         .then(canvas => {
           vs.image = canvas;
-          console.timeline('draw');
+          console.time('draw');
           vs.draw();
-          console.timelineEnd('draw');
+          console.timeEnd('draw');
       });
     });
 
@@ -126,6 +126,16 @@
       vs[event.target.dataset.bind] = parseFloat(value);
       vs.draw();
     }
+
+    function genericInputHandler(event) {
+      const value = event.target.value;
+      event.target.parentNode.querySelector('.value').textContent = value;
+    }
+
+    Array.from(document.querySelectorAll('.controls input'))
+      .forEach(control => {
+        control.addEventListener('input', genericInputHandler);
+      });
 
     Array.from(document.querySelectorAll('.controls input:not(.noauto)'))
       .forEach(control => {
